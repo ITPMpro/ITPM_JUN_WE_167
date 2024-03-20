@@ -8,6 +8,7 @@ import TabNavigation from './navigations/TabNavigation';
 
 export default function App() {
   return (
+<<<<<<< HEAD
    
     
       <View style={styles.container}> 
@@ -17,6 +18,12 @@ export default function App() {
         </NavigationContainer>
       </View>
    
+=======
+    <View style={styles.container}>
+      <Text>Hello kavindu</Text>
+      <StatusBar style="auto" />
+    </View>
+>>>>>>> 69d4cb3cea3adb551f4bd6dade74d58f6a616867
   );
 }
 
