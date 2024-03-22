@@ -23,7 +23,7 @@ export default function MyTabs() {
     >
         <Tab.Screen name='Category' component={CategoryScreenComponent} options={{ tabBarLabel: 'Category'}}/>
         <Tab.Screen name='Levels' component={LevelsScreenComponent} options={{ tabBarLabel: 'Levels'}}/>
-        <Tab.Screen name='AllShops' component={AllShopsScreenComponent} options={{ tabBarLabel: 'AllShops'}}/>
+        <Tab.Screen name='AllShops' component={AllShopsScreenComponent} options={{ tabBarLabel: 'All Shops'}}/>
     </Tab.Navigator>
   )
 }
