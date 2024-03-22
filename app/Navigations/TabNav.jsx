@@ -16,9 +16,10 @@ export default function MyTabs() {
     <Tab.Navigator 
         initialRouteName="Category"
         screenOptions={{
-            tabBarActiveTintColor: "#e91e63",
+            tabBarActiveTintColor: "white", 
             tabBarlabelStyle: {fontSize:12},
-            tabBarStyle:{ backgroundColor: 'white', marginTop:insets.top}
+        
+            tabBarStyle:{ backgroundColor: 'black',marginTop:insets.top, elevation: 10,shadowOpacity: 10}
         }}
     >
         <Tab.Screen name='Category' component={CategoryScreenComponent} options={{ tabBarLabel: 'Category'}}/>

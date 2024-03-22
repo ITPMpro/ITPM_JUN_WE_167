@@ -8,7 +8,7 @@ export default function LevelsScreenComponent() {
             flex:1,
             justifyContent:"center",
             alignItems:"center",
-            backgroundColor: "#c203fc",
+            backgroundColor: "#03cafc",
         }}>
             <Text style={{fontSize: 20, color: "#ffffff", fontWeight: "800"}}>Levels Screen is here!</Text>
         </View>
