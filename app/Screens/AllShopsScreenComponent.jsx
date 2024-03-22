@@ -82,11 +82,7 @@ export default function AllShopsScreenComponent() {
     }
 
     return (
-        <View style={{
-          flex:1,
-          
-          backgroundColor: "#03cafc",
-      }}>
+        <View style={{flex:1,backgroundColor: "#03cafc", padding:4}}>
           { !editingItem && (
             <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addImage}>
                 {editingItem ? 'Update Store' : <Image source={require('./add.png')} style={styles.addImage} />}
