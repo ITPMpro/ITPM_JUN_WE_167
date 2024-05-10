@@ -1,25 +1,29 @@
-// App.jsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ImageBackground, Image } from 'react-native';
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { db } from './config'; // Import Firebase app and Firestore
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ImageBackground, Image, Modal, Alert } from 'react-native';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import storage from '@react-native-firebase/storage';
+import ImagePicker from 'react-native-image-picker';
+import { db } from './config';
 
-// Preload images
-const avatar1 = require('../assets/user.png');
-const avatar2 = require('../assets/user.png');
-const tweetImage1 = require('../assets/img1.jpg');
+// Import your assets here
 const yourAvatar = require('../assets/img1.jpg');
-const backgroundImage = require('../assets/img1.jpg');
+const backgroundImage = require('../assets/new.jpeg');
 
 const App = () => {
   const [tweets, setTweets] = useState([]);
   const [newTweet, setNewTweet] = useState('');
   const [newImage, setNewImage] = useState('');
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedTweet, setEditedTweet] = useState('');
+  const [selectedTweetId, setSelectedTweetId] = useState(null);
+  const [initialTweetContent, setInitialTweetContent] = useState('');
 
   useEffect(() => {
-    const q = query(collection(db, 'tweets'), orderBy('id', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedTweets = snapshot.docs.map(doc => doc.data());
+    const unsubscribe = onSnapshot(collection(db, 'tweets'), (snapshot) => {
+      const fetchedTweets = snapshot.docs.map(doc => ({
+        id: doc.id, // Include the document ID
+        ...doc.data() // Include other tweet data
+      }));
       setTweets(fetchedTweets);
     });
 
@@ -34,16 +38,59 @@ const App = () => {
     await deleteDoc(doc(db, 'tweets', id));
   };
 
-  const handleTweetSubmit = () => {
+  const updateTweetInFirestore = async () => {
+    if (editedTweet.trim() === '') {
+      return;
+    }
+
+    const updatedTweetObj = {
+      tweet: editedTweet,
+    };
+
+    try {
+      await updateDoc(doc(db, 'tweets', selectedTweetId), updatedTweetObj);
+      setEditModalVisible(false);
+      setEditedTweet('');
+    } catch (error) {
+      console.error("Error updating tweet:", error);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    ImagePicker.showImagePicker({ mediaType: 'photo' }, async (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else {
+        const imageUri = response.uri;
+        const imageName = response.fileName;
+
+        const reference = storage().ref(`images/${imageName}`);
+        await reference.putFile(imageUri);
+        const imageUrl = await reference.getDownloadURL();
+
+        setNewImage(imageUrl);
+      }
+    });
+  };
+
+  const handleTweetSubmit = async () => {
     if (newTweet.trim() === '' && newImage.trim() === '') {
-      return; // Prevent empty tweets
+      return;
+    }
+
+    let imageUrl = '';
+
+    if (newImage.trim() !== '') {
+      imageUrl = newImage;
     }
 
     const newTweetObj = {
-      id: tweets.length + 1,
+      // No need to set ID here
       username: 'YourUsername',
       tweet: newTweet,
-      image: newImage,
+      image: imageUrl,
       avatar: yourAvatar,
     };
 
@@ -53,8 +100,15 @@ const App = () => {
     setNewImage('');
   };
 
-  const handleDelete = (id) => {
-    deleteTweetFromFirestore(id);
+  const handleDelete = async (id) => {
+    await deleteTweetFromFirestore(id);
+  };
+
+  const handleEdit = (id, initialTweet) => {
+    setSelectedTweetId(id);
+    setInitialTweetContent(initialTweet);
+    setEditedTweet(initialTweet);
+    setEditModalVisible(true);
   };
 
   return (
@@ -72,7 +126,7 @@ const App = () => {
           <TouchableOpacity style={styles.button} onPress={handleTweetSubmit}>
             <Text style={styles.buttonText}>Post</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => alert('Upload image functionality not implemented')}>
+          <TouchableOpacity style={styles.button} onPress={handleImageUpload}>
             <Text style={styles.buttonText}>Upload Image</Text>
           </TouchableOpacity>
         </View>
@@ -83,11 +137,14 @@ const App = () => {
               <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(tweet.id)}>
                 <Text style={styles.deleteButtonText}>Delete</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(tweet.id, tweet.tweet)}>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
               <Image source={tweet.avatar} style={styles.avatar} />
               <View style={styles.tweetContent}>
                 <Text style={styles.username}>{tweet.username}</Text>
                 <Text style={styles.tweetText}>{tweet.tweet}</Text>
-                {tweet.image && <Image source={tweet.image} style={styles.tweetImage} />}
+                {tweet.image && <Image source={{ uri: tweet.image }} style={styles.tweetImage} />}
                 <View style={styles.actionButtons}>
                   <TouchableOpacity style={styles.actionButton}>
                     <Text style={styles.actionButtonText}>Like</Text>
@@ -103,6 +160,32 @@ const App = () => {
             </View>
           ))}
         </ScrollView>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={editModalVisible}
+          onRequestClose={() => {
+            setEditModalVisible(false);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Edit Post</Text>
+              <TextInput
+                style={styles.editInput}
+                value={editedTweet}
+                onChangeText={text => setEditedTweet(text)}
+              />
+              <TouchableOpacity style={styles.editButtont} onPress={updateTweetInFirestore}>
+                <Text style={styles.editButtonTextt}>Update</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.editButtone} onPress={() => setEditModalVisible(false)}>
+                <Text style={styles.editButtonTexte}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </ImageBackground>
   );
@@ -116,7 +199,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     padding: 20,
   },
   header: {
@@ -124,7 +206,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
-    color: '#333',
+    color: '#fff',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -133,13 +215,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 20,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   input: {
     flex: 1,
     borderWidth: 0,
     borderRadius: 20,
-    padding: 10,
   },
   button: {
     backgroundColor: '#1DA1F2',
@@ -174,21 +255,24 @@ const styles = StyleSheet.create({
   },
   username: {
     fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#fff',
   },
   tweetText: {
-    marginTop: 5,
+    marginBottom: 5,
+    color: '#fff',
   },
   tweetImage: {
-    marginTop: 5,
     width: '100%',
     height: 200,
     resizeMode: 'cover',
     borderRadius: 10,
+    marginBottom: 5,
   },
   deleteButton: {
     position: 'absolute',
     top: 5,
-    right: 5,
+    right: 10, // Adjusted position
     backgroundColor: 'red',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -200,7 +284,6 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    marginTop: 10,
     alignItems: 'center',
   },
   actionButton: {
@@ -212,6 +295,68 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 20,
+    marginBottom: 30,
+    paddingLeft: 100,
+  },
+  editButton: {
+    position: 'absolute',
+    top: 45,
+    right: 5,
+    backgroundColor: 'green',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  editButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  editButtone: {
+    position: 'absolute',
+    top: 115,
+    right: 20,
+    backgroundColor: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  editButtonTexte: {
+    color: '#fff',
+    fontWeight: 'bold',
+    
+  },
+
+  editButtont: {
+    position: 'absolute',
+    top: 115,
+    right: 100,
+    backgroundColor: 'blue',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  editButtonTextt: {
+    color: '#fff',
+    fontWeight: 'bold',
+    
   },
 });
 
