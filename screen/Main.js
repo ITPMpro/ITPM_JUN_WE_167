@@ -23,7 +23,7 @@ const brands = [
   require('../assets/pizzahut.jpg'),
 ];
 
-export default function HomeScreen({ navigation }) { // Pass navigation prop
+export default function HomeScreen({ navigation }) {
   const renderItem = ({ item }) => {
     return (
       <View style={styles.slide}>
@@ -40,31 +40,28 @@ export default function HomeScreen({ navigation }) { // Pass navigation prop
   ];
 
   const handleViewProfile = () => {
-    navigation.navigate("Home"); // Navigate to the Home component
+    navigation.navigate("Home");
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        {/* Profile Button */}
-        <TouchableOpacity style={styles.profileButton} onPress={handleViewProfile}>
-          <Text style={styles.profileButtonText}>Profile</Text>
-        </TouchableOpacity>
-
         <View style={styles.userInfo}>
           <View style={styles.searchContainer}>
             <Ionicons name="search" size={24} color="black" style={styles.searchIcon} />
             <TextInput style={styles.searchInput} placeholder='Search' />
           </View>
           <View style={styles.iconContainer}>
-            <Image source={require('../assets/user.png')} style={styles.userIcon} />
+            <TouchableOpacity onPress={handleViewProfile}>
+              <Image source={require('../assets/user.png')} style={styles.userIcon} />
+            </TouchableOpacity>
           </View>
         </View>
         <Carousel
           data={images}
           renderItem={renderItem}
           sliderWidth={width}
-          itemWidth={width} // Set itemWidth to width of the screen
+          itemWidth={width}
           layout={'default'}
           loop
           autoplay
@@ -259,18 +256,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: -20,
   
-  },
-  profileButton: {
-    backgroundColor: '#2A3F84', // Button background color
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10, // Adjust spacing as needed
-  },
-  profileButtonText: {
-    color: 'white', // Button text color
-    fontWeight: 'bold',
-    fontSize: 18,
   },
 });
