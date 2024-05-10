@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+// App.jsx
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ImageBackground, Image } from 'react-native';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { db } from './config'; // Import Firebase app and Firestore
 
 // Preload images
 const avatar1 = require('../assets/user.png');
@@ -7,49 +10,29 @@ const avatar2 = require('../assets/user.png');
 const tweetImage1 = require('../assets/img1.jpg');
 const yourAvatar = require('../assets/img1.jpg');
 const backgroundImage = require('../assets/img1.jpg');
-const App = () => {
-  const [tweets, setTweets] = useState([
-    {
-      id: 1,
-      username: 'JohnDoe',
-      tweet: 'This is my first tweet!',
-      image: null,
-      avatar: avatar1,
-    },
-    {
-      id: 2,
-      username: 'JaneDoe',
-      tweet: 'Hello world! #reactnative',
-      image: tweetImage1,
-      avatar: avatar2,
-    },
-    {
-      id: 3,
-      username: 'JaneDoe',
-      tweet: 'Hello world! #reactnative',
-      image: tweetImage1,
-      avatar: avatar2,
-    },
-    {
-      id: 4,
-      username: 'JaneDoe',
-      tweet: 'Hello world! #reactnative',
-      image: tweetImage1,
-      avatar: avatar2,
-    },
-    {
-      id: 5,
-      username: 'JaneDoe',
-      tweet: 'Hello world! #reactnative',
-      image: tweetImage1,
-      avatar: avatar2,
-    },
-    
-    // Add more tweets as needed
-  ]);
 
+const App = () => {
+  const [tweets, setTweets] = useState([]);
   const [newTweet, setNewTweet] = useState('');
   const [newImage, setNewImage] = useState('');
+
+  useEffect(() => {
+    const q = query(collection(db, 'tweets'), orderBy('id', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedTweets = snapshot.docs.map(doc => doc.data());
+      setTweets(fetchedTweets);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const addTweetToFirestore = async (tweetObj) => {
+    await addDoc(collection(db, 'tweets'), tweetObj);
+  };
+
+  const deleteTweetFromFirestore = async (id) => {
+    await deleteDoc(doc(db, 'tweets', id));
+  };
 
   const handleTweetSubmit = () => {
     if (newTweet.trim() === '' && newImage.trim() === '') {
@@ -64,13 +47,14 @@ const App = () => {
       avatar: yourAvatar,
     };
 
-    setTweets([newTweetObj, ...tweets]);
+    addTweetToFirestore(newTweetObj);
+
     setNewTweet('');
     setNewImage('');
   };
 
   const handleDelete = (id) => {
-    setTweets(tweets.filter(tweet => tweet.id !== id));
+    deleteTweetFromFirestore(id);
   };
 
   return (
@@ -94,7 +78,7 @@ const App = () => {
         </View>
 
         <ScrollView style={styles.tweetContainer}>
-          {tweets.slice(0, 5).map(tweet => (
+          {tweets.map(tweet => (
             <View key={tweet.id} style={styles.tweet}>
               <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(tweet.id)}>
                 <Text style={styles.deleteButtonText}>Delete</Text>
