@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ImageBackground } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { getDatabase, ref, onValue, off, remove } from "firebase/database";
 import app from "../Firebase";
@@ -85,11 +85,17 @@ const ViewProfile = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>View Profile</Text>
-      <Card style={styles.card}>
+      <Card style={styles.card1}>
+        <ImageBackground
+          source={require("../assets/Avatar.png")} // Use require() to import the image
+          style={styles.background}
+        ></ImageBackground>
         <Card.Content>
-          <Text style={styles.detail}>
-            <Text style={styles.label}>Name:</Text> <Text>{name}</Text>
-          </Text>
+          <Text style={styles.name}>{name}</Text>
+        </Card.Content>
+      </Card>
+      <Card style={styles.card2}>
+        <Card.Content>
           <Text style={styles.detail}>
             <Text style={styles.label}>Email:</Text> <Text>{email}</Text>
           </Text>
@@ -120,22 +126,34 @@ const ViewProfile = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: "white",
+    padding: 10,
+  },
+  background: {
+    width: 150,
+    height: 150,
+    margin: 5,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 70,
+    marginBottom: 40,
     fontFamily: "Arial",
+    color: "#2A3F84",
   },
-  card: {
+  card1: {
+    display: "flex",
+  },
+  card2: {
     width: "90%",
     marginBottom: 30,
     elevation: 4,
+    margin: 10,
   },
   detail: {
     fontSize: 18,
@@ -143,6 +161,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "bold",
+    justifyContent: "center",
+    textAlign: "center",
+    alignItems: "center",
   },
   buttonContainer: {
     width: "100%",
@@ -154,10 +175,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 5,
+    borderRadius: 10,
+    backgroundColor: "#2A3F84",
   },
   deleteButton: {
     backgroundColor: "red",
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: "bold",
+    justifyContent: "center",
+    textAlign: "center",
+    alignItems: "center",
   },
 });
 

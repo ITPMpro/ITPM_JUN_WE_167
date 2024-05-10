@@ -9,13 +9,13 @@ import {
   Image,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { getDatabase, ref, push } from "firebase/database";
+import { getDatabase, ref, push, onValue, off } from "firebase/database";
 import app from "../Firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // Ensure this is the correct import path for your Firebase configuration
 
-const options = ["10%", "15%", "20%", "25%", "30%"];
+const options = ["10", "15", "20", "25", "30"];
 
 const WheelOfFortune = () => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -78,8 +78,21 @@ const WheelOfFortune = () => {
     }
   }, [loggedUser]);
 
-  const handleSpin = () => {
+  const handleSpin = async () => {
     setIsSpinning(true);
+
+    // Check if the user has already spun the wheel today
+    const lastSpinDate = await AsyncStorage.getItem(
+      `lastSpinDate_${loggedUser.id}`
+    );
+    const today = new Date().toDateString();
+
+    if (lastSpinDate === today) {
+      setIsSpinning(false);
+      return; // User has already spun the wheel today, exit function
+    }
+
+    // User has not spun the wheel today, proceed with spinning
     const randomIndex = Math.floor(Math.random() * options.length);
     const sectionIndex = randomIndex % (360 / 30); // Calculate the section index
     const angleBySegment = (2 * Math.PI) / options.length;
@@ -96,7 +109,11 @@ const WheelOfFortune = () => {
 
       console.log("Selected option:", selected);
       saveToFirebase(selected); // Save selected option to Firebase
-      setIsSpinning(false);
+
+      // Save today's date as the last spin date for the user
+      AsyncStorage.setItem(`lastSpinDate_${loggedUser.id}`, today).then(() => {
+        setIsSpinning(false);
+      });
     });
   };
 
@@ -118,7 +135,7 @@ const WheelOfFortune = () => {
         navigation.navigate("Home");
       })
       .catch((error) => {
-        alert("Error adding data:", error);
+        navigation.navigate("Home");
       });
   };
 
@@ -128,7 +145,7 @@ const WheelOfFortune = () => {
   });
 
   return (
-    <>
+    <View style={styles.content}>
       <Text style={styles.title}>Spin the wheel and win a prize!</Text>
       <View style={styles.container}>
         <View style={styles.wheelContainer}>
@@ -153,16 +170,23 @@ const WheelOfFortune = () => {
         {selectedOption && (
           <View style={styles.selectedOption}>
             <Text style={styles.selectedOptionText}>
-              Congratulations! You won a {selectedOption} discount today!
+              Congratulations! You won a {selectedOption}% discount today!
             </Text>
           </View>
         )}
       </View>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  content: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "start",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
   container: {
     alignItems: "center",
     marginTop: 50,
@@ -185,7 +209,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "purple",
+    backgroundColor: "#2A3F84",
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
