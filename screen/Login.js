@@ -52,7 +52,7 @@ const Login = ({ navigation }) => {
     if (user) {
       try {
         await AsyncStorage.setItem("logemail", email);
-        navigation.navigate("Home");
+        navigation.navigate("Main");
       } catch (error) {
         console.error("Error storing email:", error);
       }
