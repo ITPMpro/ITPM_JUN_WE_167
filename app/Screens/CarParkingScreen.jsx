@@ -250,16 +250,13 @@ const styles = StyleSheet.create({
         // marginHorizontal: 100,
     },
     reportButton: {
-        // textAlign: 'center',
-        // alignItems:'flex-end',
+        alignSelf: 'center',
         marginBottom: 10,
         backgroundColor: '#007bff',
         padding: 10,
         borderRadius: 5,
-        
     },
     reportButtonText: {
-        // alignItems:'flex-end',
         color: '#fff',
         fontSize: 16,
     },
