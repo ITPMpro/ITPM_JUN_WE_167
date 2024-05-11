@@ -36,7 +36,7 @@ export default function LevelsScreenComponent() {
         fetchStoredData(level.id);
     };
 
-    // Function to handle back navigation
+    // Function to handle back navigation ...
     const handleBackNavigation = () => {
         setSelectedLevel(null);
     };
