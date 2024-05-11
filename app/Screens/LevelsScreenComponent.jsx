@@ -8,7 +8,7 @@ export default function LevelsScreenComponent() {
     const [storeData, setStoreData] = useState([]);
     const [selectedLevel, setSelectedLevel] = useState(null);
 
-    // Array of levels with their corresponding level IDs
+    // Array of levels with their corresponding level IDs .....
     const levels = [
         { id: 1, name: 'Level 1' },
         { id: 2, name: 'Level 2' },
@@ -19,7 +19,7 @@ export default function LevelsScreenComponent() {
         { id: 0, name: 'Lower Ground' },
     ];
 
-    // Fetch shop data from Firestore based on the selected level
+    // Fetch shop data from Firestore based on the selected level ....
     const fetchStoredData = async (levelId) => {
         const q = query(collection(db, "store"), where("Level", "==", levelId));
         const querySnapshot = await getDocs(q);
