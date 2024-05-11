@@ -4,6 +4,7 @@ import ShopScreen from './app/Screens/AllShopsScreenComponent';
 import { NavigationContainer } from '@react-navigation/native';
 import TabNav from './app/Navigations/TabNav';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import CarParkingScreen from './app/Screens/CarParkingScreen';
 
 
 export default function App() {
@@ -11,7 +12,8 @@ export default function App() {
  
       <SafeAreaProvider>
       <NavigationContainer>
-        <TabNav/>
+     <TabNav/>
+     {/* <CarParkingScreen/> */}
       </NavigationContainer>
       </SafeAreaProvider>
       
