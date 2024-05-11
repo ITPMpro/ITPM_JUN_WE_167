@@ -41,7 +41,7 @@ export default function LevelsScreenComponent() {
         setSelectedLevel(null);
     };
 
-    // Render function for individual level items
+    // Render function for individual level items...
     const renderLevelItem = ({ item }) => (
         <TouchableOpacity onPress={() => handleItemClick(item)}>
             <View style={styles.levelItem}>
