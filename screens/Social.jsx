@@ -6,7 +6,7 @@ import ImagePicker from 'react-native-image-picker';
 import { db } from './config';
 
 // Import your assets here
-const yourAvatar = require('../assets/img1.jpg');
+const yourAvatar = require('../assets/user.png');
 const backgroundImage = require('../assets/new.jpeg');
 
 const App = () => {
@@ -57,23 +57,32 @@ const App = () => {
   };
 
   const handleImageUpload = async () => {
-    ImagePicker.showImagePicker({ mediaType: 'photo' }, async (response) => {
+    const options = {
+      mediaType: 'photo',
+      quality: 0.5, // Adjust the quality as needed
+    };
+  
+    ImagePicker.launchImageLibrary(options, async (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else {
         const imageUri = response.uri;
-        const imageName = response.fileName;
-
+        const imageName = response.fileName || 'image.jpg'; // Provide a default name if fileName is not available
+  
         const reference = storage().ref(`images/${imageName}`);
-        await reference.putFile(imageUri);
-        const imageUrl = await reference.getDownloadURL();
-
-        setNewImage(imageUrl);
+        try {
+          const taskSnapshot = await reference.putFile(imageUri);
+          const imageUrl = await taskSnapshot.ref.getDownloadURL();
+          setNewImage(imageUrl);
+        } catch (error) {
+          console.error('Error uploading image: ', error);
+        }
       }
     });
   };
+  
 
   const handleTweetSubmit = async () => {
     if (newTweet.trim() === '' && newImage.trim() === '') {
@@ -123,12 +132,13 @@ const App = () => {
             value={newTweet}
             onChangeText={text => setNewTweet(text)}
           />
-          <TouchableOpacity style={styles.button} onPress={handleTweetSubmit}>
-            <Text style={styles.buttonText}>Post</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleImageUpload}>
-            <Text style={styles.buttonText}>Upload Image</Text>
-          </TouchableOpacity>
+         <TouchableOpacity style={styles.button} onPress={handleTweetSubmit}>
+  <Text style={styles.buttonText}>Post</Text>
+</TouchableOpacity>
+<TouchableOpacity style={[styles.button, { marginLeft: 0 }]} onPress={handleImageUpload}>
+  <Text style={styles.buttonText}>Upload Image</Text>
+</TouchableOpacity>
+
         </View>
 
         <ScrollView style={styles.tweetContainer}>
@@ -177,8 +187,8 @@ const App = () => {
                 value={editedTweet}
                 onChangeText={text => setEditedTweet(text)}
               />
-              <TouchableOpacity style={styles.editButtont} onPress={updateTweetInFirestore}>
-                <Text style={styles.editButtonTextt}>Update</Text>
+              <TouchableOpacity style={styles.editButton} onPress={updateTweetInFirestore}>
+                <Text style={styles.editButtonText}>Update</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.editButtone} onPress={() => setEditModalVisible(false)}>
                 <Text style={styles.editButtonTexte}>Cancel</Text>
@@ -199,7 +209,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
+    padding: 35,
   },
   header: {
     fontSize: 24,
@@ -207,6 +217,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: '#fff',
+ 
   },
   inputContainer: {
     flexDirection: 'row',
@@ -214,8 +225,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderRadius: 25, // Increase border radius for a more rounded look
+    paddingHorizontal: 20, // Increase padding for better spacing
+    height: 50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   input: {
     flex: 1,
@@ -224,10 +244,10 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#1DA1F2',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    borderRadius: 20,
-    marginLeft: 10,
+    borderRadius: 10,
+   
   },
   buttonText: {
     color: '#fff',
@@ -267,12 +287,12 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: 'cover',
     borderRadius: 10,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   deleteButton: {
     position: 'absolute',
     top: 5,
-    right: 10, // Adjusted position
+    right: -3, // Adjusted position
     backgroundColor: 'red',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -318,8 +338,8 @@ const styles = StyleSheet.create({
   },
   editButton: {
     position: 'absolute',
-    top: 45,
-    right: 5,
+    top: 5,
+    right: 65,
     backgroundColor: 'green',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -328,35 +348,6 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  editButtone: {
-    position: 'absolute',
-    top: 115,
-    right: 20,
-    backgroundColor: 'black',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-  },
-  editButtonTexte: {
-    color: '#fff',
-    fontWeight: 'bold',
-    
-  },
-
-  editButtont: {
-    position: 'absolute',
-    top: 115,
-    right: 100,
-    backgroundColor: 'blue',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-  },
-  editButtonTextt: {
-    color: '#fff',
-    fontWeight: 'bold',
-    
   },
 });
 

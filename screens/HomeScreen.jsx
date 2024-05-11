@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TextInput, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Carousel from 'react-native-snap-carousel';
@@ -13,7 +13,6 @@ const images = [
 ];
 
 const brands = [
-
   require('../assets/pizzahut.jpg'),
   require('../assets/pizzahut.jpg'),
   require('../assets/pizzahut.jpg'),
@@ -22,10 +21,12 @@ const brands = [
   require('../assets/pizzahut.jpg'),
   require('../assets/pizzahut.jpg'),
   require('../assets/pizzahut.jpg'),
-
 ];
 
 export default function HomeScreen() {
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredCategories, setFilteredCategories] = useState([]);
+
   const renderItem = ({ item }) => {
     return (
       <View style={styles.slide}>
@@ -47,13 +48,26 @@ export default function HomeScreen() {
     console.log("Redirect to category:", category);
   };
 
+  const handleSearch = () => {
+    const filtered = categories.filter(category =>
+      category.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         <View style={styles.userInfo}>
           <View style={styles.searchContainer}>
             <Ionicons name="search" size={24} color="black" style={styles.searchIcon} />
-            <TextInput style={styles.searchInput} placeholder='Search' />
+            <TextInput
+              style={styles.searchInput}
+              placeholder='Search'
+              onChangeText={text => setSearchValue(text)}
+              value={searchValue}
+              onSubmitEditing={handleSearch}
+            />
           </View>
           <View style={styles.iconContainer}>
             <Image source={require('../assets/user.png')} style={styles.userIcon} />
@@ -74,7 +88,12 @@ export default function HomeScreen() {
 
         <Text style={styles.sectionTitle2}>Categories</Text>
         <View style={styles.categoriesContainer}>
-          {categories.map((category, index) => (
+          {filteredCategories.length > 0 ? filteredCategories.map((category, index) => (
+            <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(category)}>
+              <Image source={category.icon} style={styles.categoryIcon} />
+              <Text>{category.name}</Text>
+            </TouchableOpacity>
+          )) : categories.map((category, index) => (
             <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(category)}>
               <Image source={category.icon} style={styles.categoryIcon} />
               <Text>{category.name}</Text>
