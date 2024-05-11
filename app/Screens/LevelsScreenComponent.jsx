@@ -30,7 +30,7 @@ export default function LevelsScreenComponent() {
         setStoreData(data);
     };
 
-    // Function to handle item click for each level
+    // Function to handle item click for each level ..
     const handleItemClick = (level) => {
         setSelectedLevel(level.id);
         fetchStoredData(level.id);
