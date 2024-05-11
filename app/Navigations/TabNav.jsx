@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CategoryScreenComponent from '../Screens/CategoryScreenComponent';
 import LevelsScreenComponent from '../Screens/LevelsScreenComponent';
 import AllShopsScreenComponent from '../Screens/AllShopsScreenComponent';
+import CarParkingScreen from '../Screens/CarParkingScreen';
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -24,7 +25,10 @@ export default function MyTabs() {
     >
         <Tab.Screen name='Category' component={CategoryScreenComponent} options={{ tabBarLabel: 'Category'}}/>
         <Tab.Screen name='Levels' component={LevelsScreenComponent} options={{ tabBarLabel: 'Levels'}}/>
-        <Tab.Screen name='AllShops' component={AllShopsScreenComponent} options={{ tabBarLabel: 'All Shops'}}/>
+       <Tab.Screen name='AllShops' component={AllShopsScreenComponent} options={{ tabBarLabel: 'All Shops'}}/>
+        <Tab.Screen name='CarParking' component={CarParkingScreen} options={{ tabBarLabel: 'Car Parking'}}/>
+      
+       
     </Tab.Navigator>
   )
 }

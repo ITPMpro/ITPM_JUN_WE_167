@@ -1,12 +1,14 @@
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Alert, Modal, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Alert, Modal, Image } from 'react-native';
 import { db } from '../../firebase/config';
 import { addDoc, collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { Picker } from '@react-native-picker/picker';
 
 export default function AllShopsScreenComponent() {
     const [storeName, setStoreName] = useState('');
     const [about, setAbout] = useState('');
     const [level, setLevel] = useState('');
+    const [category, setCategory] = useState('');
     const [storeData, setStoreData] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -31,42 +33,44 @@ export default function AllShopsScreenComponent() {
         } else {
             addDoc(collection(db, "store"), {
                 StoreName: storeName,
-                Level: level,
-                About: about
+                Level: parseInt(level),
+                About: about,
+                Category: category
             })
             .then(() => {
                 console.log('Data submitted successfully');
-                fetchStoredData(); // Update the displayed data after submission
+                fetchStoredData();
             })
             .catch((error) => {
                 console.log('Error submitting data:', error);
             });
         }
-        setModalVisible(false); // Close the modal after submission
+        setModalVisible(false);
     }
 
     function updateItem() {
         updateDoc(doc(db, "store", editingItem.id), {
             StoreName: storeName,
-            Level: level,
-            About: about
+            Level: parseInt(level),
+            About: about,
+            Category: category
         })
         .then(() => {
             console.log('Item updated successfully');
             setEditingItem(null);
-            fetchStoredData(); // Update the displayed data after update
+            fetchStoredData();
         })
         .catch((error) => {
             console.log('Error updating item:', error);
         });
-        setModalVisible(false); // Close the modal after update
+        setModalVisible(false);
     }
 
     function deleteItem(itemId) {
         deleteDoc(doc(db, "store", itemId))
             .then(() => {
                 console.log("Document successfully deleted!");
-                fetchStoredData(); // Update the displayed data after deletion
+                fetchStoredData();
             })
             .catch((error) => {
                 console.error("Error removing document: ", error);
@@ -77,19 +81,18 @@ export default function AllShopsScreenComponent() {
         setStoreName(item.StoreName);
         setLevel(item.Level);
         setAbout(item.About);
+        setCategory(item.Category);
         setEditingItem(item);
-        setModalVisible(true); // Open the modal for editing
+        setModalVisible(true);
     }
 
     return (
-        <View style={{flex:1,backgroundColor: "#03cafc", padding:4}}>
-          { !editingItem && (
+        <View style={{ flex: 1, backgroundColor: "#03cafc", padding: 4 }}>
+            <Text style={styles.textModel}>Add a Store</Text>
             <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addImage}>
-                {editingItem ? 'Update Store' : <Image source={require('./add.png')} style={styles.addImage} />}
-                
-
+                <Image source={require('./add.png')} style={styles.addIcon} />
             </TouchableOpacity>
-            )}
+
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -98,7 +101,6 @@ export default function AllShopsScreenComponent() {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Submit Store Information</Text>
-                        <View>
                         <Text style={styles.textModel}>Store Name :</Text>
                         <TextInput
                             value={storeName}
@@ -106,27 +108,46 @@ export default function AllShopsScreenComponent() {
                             placeholder="Store Name"
                             style={styles.textBoxes}
                         />
-                        </View>
+                        <Text style={styles.textModel}>Category :</Text>
+                        <Picker
+                            selectedValue={category}
+                            onValueChange={(itemValue) => setCategory(itemValue)}
+                            placeholder="Category"
+                            style={styles.textBoxes}
+                        >
+                            <Picker.Item label="Select Category" value="" />
+                            <Picker.Item label="Beauty and Wellness" value="Beauty and Wellness" />
+                            <Picker.Item label="Department Store / Supermarket" value="Department Store / Supermarket" />
+                            <Picker.Item label="Entertainment" value="Entertainment" />
+                            <Picker.Item label="Fashion and Accessories" value="Fashion and Accessories" />
+                            <Picker.Item label="Food and Beverages" value="Food and Beverages" />
+                            <Picker.Item label="Jewellery and Watches" value="Jewellery and Watches" />
+                            <Picker.Item label="Kids and Maternity" value="Kids and Maternity" />
+                            <Picker.Item label="Lifetyle and Sports" value="Lifetyle and Sports" />
+                            <Picker.Item label="Services and Others" value="Services and Others" />
+                        
+                            {/* Add more categories as needed */}
+                        </Picker>
                         <Text style={styles.textModel}>Level :</Text>
                         <TextInput
-                            value={level}
+                            value={String(level)}
                             onChangeText={(level) => setLevel(level)}
                             placeholder="Level"
                             style={styles.textBoxes}
                         />
                         <Text style={styles.textModel}>About :</Text>
                         <TextInput
-                            value={about}
+                            value={String(about)}
                             onChangeText={(about) => setAbout(about)}
                             placeholder="About"
                             style={styles.textBoxes}
                         />
+                        
                         <TouchableOpacity onPress={submitDataToFirestore} style={styles.submitButton}>
                             <Text style={styles.submitButtonText}>{editingItem ? 'Update Store' : 'Insert Store'}</Text>
-                           
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
+                            style={styles.openButton}
                             onPress={() => {
                                 setModalVisible(false);
                                 setEditingItem(null);
@@ -144,13 +165,12 @@ export default function AllShopsScreenComponent() {
                         <Text style={styles.listView}>Store Name  :  {item.StoreName}</Text>
                         <Text style={styles.listView}>Level  :  {item.Level}</Text>
                         <Text style={styles.listView}>About  :  {item.About}</Text>
+                        <Text style={styles.listView}>Category  :  {item.Category}</Text>
                         <View style={styles.buttonsContainer}>
                             <TouchableOpacity onPress={() => editItem(item)} style={[styles.button, styles.editButton]}>
-                                {/* <Text>Edit</Text> */}
                                 <Image source={require('./draw.png')} style={styles.editIcon} />
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => deleteItem(item.id)} style={[styles.button, styles.deleteButton]}>
-                                {/* <Text>Delete</Text> */}
                                 <Image source={require('./bin.png')} style={styles.editIcon} />
                             </TouchableOpacity>
                         </View>
@@ -289,7 +309,7 @@ const styles = StyleSheet.create({
   },
   // FlatList styles
   itemContainer: {
-    backgroundColor: '#ADD8E6',
+    backgroundColor: '#b1f2ff',
     padding: 10,
     marginVertical: 5,
   
