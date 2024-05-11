@@ -50,7 +50,7 @@ export default function LevelsScreenComponent() {
         </TouchableOpacity>
     );
 
-    // Header component for the FlatList
+    // Header component for the FlatList ...
     const headerComponent = () => (
         <Text style={styles.header}>LEVELS</Text>
     );
